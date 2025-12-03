@@ -2,7 +2,7 @@ name: Build and Push Matomo Image
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
     paths:
       - 'docker/**' # Solo ejecuta si cambia el dockerfile
 
