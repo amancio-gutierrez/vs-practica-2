@@ -19,6 +19,5 @@ variable "mariadb_user_password" {
 variable "matomo_image" {
   description = "Docker image for Matomo"
   type        = string
-  # Cambia esto por tu imagen de Docker Hub: tu_usuario/matomo-custom:latest
-  default     = "amancito/matomo-custom:latest" 
+  default     = "amancito/matomo-custom:latest"
 }

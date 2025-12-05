@@ -20,14 +20,14 @@ provider "kubernetes" {
 # Configuración del Cluster Kind
 resource "kind_cluster" "default" {
   name = var.project_name
-  
+
   kind_config {
     kind = "Cluster"
     api_version = "kind.x-k8s.io/v1alpha4"
 
     node {
       role = "control-plane"
-      
+
       # Mapeo de puerto Host 8081 -> Container 30081 (NodePort)
       extra_port_mappings {
         container_port = 30081
@@ -37,7 +37,6 @@ resource "kind_cluster" "default" {
 
 		# Mapeo para persistencia real
       extra_mounts {
-        # Convertimos backslash a slash para compatibilidad Docker Windows
         host_path      = replace(abspath("${path.module}/../data/mariadb"), "\\", "/")
         container_path = "/var/local-data/mariadb"
       }

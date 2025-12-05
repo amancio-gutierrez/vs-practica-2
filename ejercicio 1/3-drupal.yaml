@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drupal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drupal
+  template:
+    metadata:
+      labels:
+        app: drupal
+    spec:
+      initContainers:
+      - name: init-sites
+        image: drupal:10
+        command:
+        - /bin/bash
+        - -c
+        - |
+
+          if [ -z "$(ls -A /mnt/sites)" ]; then
+            cp -a /opt/drupal/web/sites/. /mnt/sites/
+            if [ ! -f /mnt/sites/default/settings.php ]; then
+                cp /mnt/sites/default/default.settings.php /mnt/sites/default/settings.php
+                chmod 666 /mnt/sites/default/settings.php
+                mkdir -p /mnt/sites/default/files
+                chmod 777 /mnt/sites/default/files
+            fi
+            chown -R www-data:www-data /mnt/sites
+            echo "Inicialización completada."
+          else
+            echo "El volumen ya tiene datos. Omitiendo inicialización."
+          fi
+        volumeMounts:
+        - name: drupal-sites-storage
+          mountPath: /mnt/sites
+
+
+      containers:
+      - image: drupal:10
+        name: drupal
+        ports:
+        - containerPort: 80
+        env:
+        - name: DRUPAL_DB_HOST
+          value: "mysql"
+        - name: DRUPAL_DB_NAME
+          value: "drupal"
+        - name: DRUPAL_DB_USER
+          value: "drupal_user"
+        - name: DRUPAL_DB_PASSWORD
+          value: "drupal_pass"
+        volumeMounts:
+        - name: drupal-sites-storage
+          mountPath: /opt/drupal/web/sites
+      volumes:
+      - name: drupal-sites-storage
+        persistentVolumeClaim:
+          claimName: drupal-sites-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drupal-service
+spec:
+  type: NodePort
+  selector:
+    app: drupal
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30085

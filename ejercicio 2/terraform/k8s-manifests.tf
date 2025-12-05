@@ -7,8 +7,7 @@ resource "kubernetes_persistent_volume" "mariadb_pv" {
   spec {
     capacity = { storage = "5Gi" }
     access_modes = ["ReadWriteOnce"]
-    # IMPORTANTE: Definir una clase manual para evitar el default provisioner
-    storage_class_name = "manual" 
+    storage_class_name = "manual"
     persistent_volume_source {
       host_path {
         path = "/var/local-data/mariadb"
@@ -22,12 +21,10 @@ resource "kubernetes_persistent_volume_claim" "mariadb_pvc" {
   metadata { name = "mariadb-pvc" }
   spec {
     access_modes = ["ReadWriteOnce"]
-    # IMPORTANTE: Debe coincidir con el PV
     storage_class_name = "manual"
     resources { requests = { storage = "5Gi" } }
     volume_name = kubernetes_persistent_volume.mariadb_pv.metadata.0.name
   }
-  # Esperar a que el PV exista antes de crear el PVC
   depends_on = [kubernetes_persistent_volume.mariadb_pv]
 }
 
@@ -83,9 +80,9 @@ resource "kubernetes_deployment" "mariadb" {
       metadata { labels = { app = "mariadb" } }
       spec {
         container {
-          image = "mariadb:10.6" # Imagen Oficial
+          image = "mariadb:10.6"
           name  = "mariadb"
-          
+
           env {
             name  = "MARIADB_ROOT_PASSWORD"
             value = var.mariadb_root_password
@@ -102,7 +99,7 @@ resource "kubernetes_deployment" "mariadb" {
             name  = "MARIADB_PASSWORD"
             value = var.mariadb_user_password
           }
-          
+
           volume_mount {
             name       = "mariadb-storage"
             mount_path = "/var/lib/mysql"
@@ -143,8 +140,7 @@ resource "kubernetes_deployment" "matomo" {
         container {
           image = var.matomo_image
           name  = "matomo"
-          
-          # Variables de entorno para conectar a la DB
+
           env {
             name  = "MATOMO_DATABASE_HOST"
             value = "mariadb"
@@ -161,7 +157,7 @@ resource "kubernetes_deployment" "matomo" {
             name  = "MATOMO_DATABASE_DBNAME"
             value = "matomo"
           }
-          # Variable explícita para PHP Memory (aunque ya está en Dockerfile)
+
           env {
             name  = "PHP_MEMORY_LIMIT"
             value = "512M"
