@@ -1,14 +1,10 @@
 name: Build and Push Matomo Image
 
 on:
-  # Permite ejecutarlo manualmente desde la pestaña Actions
   workflow_dispatch:
   
   push:
     branches: [ "main" ]
-    # Comentamos los paths temporalmente para asegurar que salte
-    # paths:
-    #   - 'docker/**'
 
 jobs:
   build:
@@ -28,6 +24,4 @@ jobs:
         with:
           context: ./docker
           push: true
-          # IMPORTANTE: Asegúrate de que esto coincide con tu usuario real
-          # Si tu usuario es 'amancito', la imagen debe ser 'amancito/matomo-custom:latest'
           tags: amancito/matomo-custom:latest
